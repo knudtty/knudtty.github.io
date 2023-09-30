@@ -53,45 +53,63 @@ The fundamental units I will discuss is a bit, a byte, and a word.
 Data is stored in 0's and 1's. A single 0 or 1 can only describe 2 states - 0 or 1. 
 Looking at multiple 0's and 1's at once starts to paint a bigger picture. 
 Let's just look at two bits for now.
-`00`
+
+```
+00
+```
+
 If we consider this to be a number, there are 4 possible states, or combinations.
-`00`
-`01`
-`10`
-`11`
+
+```
+00
+01
+10
+11
+```
+
 and that's it. We could assign a numerical value to each of these. Let's call the top 2-bit
 combination 0, and follow the progression downwards for 1, 2, and 3. Notice that for the 
 odd numbers (1 and 3) the rightmost bit is flipped, and even numbers (0 and 2) that bit 
-is set to 0. Additionally, the numbers that are less than 2 occur where the leftmost bit 
-is set to 0, and greater than or equal to 2 occur when the leftmost bit is flipped to `1`.
+is set to `0`. Additionally, the numbers that are less than 2 occur where the leftmost bit 
+is set to `0`, and greater than or equal to 2 occur when the leftmost bit is flipped to `1`.
 We can use this to form a basis for mapping binary values to numbers. The rightmost bit 
 is assigned an index, starting from 0. Every bit to the left is given the next incremented 
 index. Calculating the number that that bit represents is done by taking 2 to the power 
 of that index. In that case we can see that the rightmost bit corresponds to 2^0, or 1, and 
-the bit to its left corresponds to 2^1, or the number 2. If that bit is set to 1, then 
+the bit to its left corresponds to 2{{< super "1" >}}, or the number 2. If that bit is set to 1, then 
 that number is present - if that bit is 0, then that number is not present. The value 
 the binary number represents is 2^idx for every index that equals 1. Reread that last sentence.
 Let's see what that looks like:
-`00 # 0 + 0`
-`01 # 0 + 2^0   = 0 + 1 = 1`
-`10 # 2^1 + 0   = 2 + 0 = 2`
-`11 # 2^1 + 2^0 = 2 + 1 = 3`
+
+| binary | left value | right value | total value |
+| - | - | - | - |
+| 00 | 0 | 0 | 0 |
+| 01 | 0 | 1 | 1 |
+| 10 | 2 | 0 | 2 |
+| 11 | 2 | 1 | 3 |
+
 Expand that to 4 bits, and calculate the value for this number:
 `1101`
 Need help?
-`1101 # 2^3 + 2^2 + 0 + 2^0 = 8 + 4 + 0 + 1 = 13`
+```
+1101
+= 2^3 + 2^2 + 0 + 2^0
+= 8 + 4 + 0 + 1 
+= 13
+```
 That's all there is to binary numbers. Expand all the way out to modern 64 bit integers, and 
-your max value is 2^64 - 1 - exactly what you'd expect by applying the given formula.
+your max value is `2^64 - 1` - exactly what you'd expect by applying the given formula.
 
 ### Bytes
 A byte is a collection of 8 bits. So if we follow the number example, what do you 
 think the max number that can be represented by a byte? Well, if every byte was filled 
 in you'd have `2^7 + 2^6 ... + 2^1 + 2^0`. Which simplifies to `2^8 - 1`, which is 255.
-See, they're simple. 
+See, they're simple.
 
-Anything less than 8 bits is often not very useful to your computer, and CPUs have evolved 
-to be very efficient to work with a whole byte rather than 1 bit at a time. In fact, 
-a 64 bit CPU works with 64 bits at a time, which is just 8 bytes.
+This is, for the most part, the lowest size of data your computer cares about. In fact, 
+memory addresses obey byte boundaries. CPUs have evolved to be very efficient to work 
+with a whole byte rather than 1 bit at a time. In fact, a 64 bit CPU works with 64 
+bits at a time, which is just 8 bytes.
 
 ### Word
 A word is the number of bits that your CPU fits in a register. The word size is unique 
@@ -204,7 +222,7 @@ null terminated - the end of the string is denoted by the null character, or the
 that equals 0 in binary. This means that to find the length of a string, you have to loop 
 through each index until you find one that equals 0 - the size is not known until you loop 
 through the entire array. Strings in C are specified by using double quotes (") while single 
-chars are denoted by ('). Therefore, the following is equivalent 
+chars are denoted by ('). Therefore, the following is equivalent:
 ```C
 char greeting1[] = {'H', 'e', 'l', 'l', 'o', ' ', 'W', 'o', 'r', 'l', 'd', '!', '\0'};
 char greeting2[] = "Hello World!";
@@ -217,7 +235,7 @@ bytes.
 ### Structs
 There are times where you will want to structure your data. Take this example:
 ```C
-void do_something_with_color(int red, int green, int blue) {
+void print_color(int red, int green, int blue) {
     printf("red: %d, green: %d, blue: %d", red, green, blue); // %d prints an integer
     return;
 }
@@ -226,7 +244,7 @@ int red = 10;
 int green = 186;
 int blue = 181;
 
-do_something_with_color(red, green, blue);
+print_color(red, green, blue);
 ```
 We have a red value, a green value, and a blue value. A composite color is made of 
 red, green, and blue. How do we make a composite color? We have three separate variables,
@@ -239,14 +257,17 @@ struct Color {
     int blue;
 }; // creates a structure of type "struct Color"
 
-void do_something_with_color(struct Color c) {
-    printf("red: %d, green: %d, blue: %d", c.red, c.green, c.blue);
+void print_color(struct Color c) {
+    printf("red: %d, green: %d, blue: %d", 
+        c->red,    // accessing data from a pointer requires dereferencing
+        c->green,  // the memory address. The operator for this is `->`
+        c->blue);
     return;
 }
 
 struct Color color = { 10, 186, 181 }; // declares a variable named "color" with type "struct Color"
 
-do_something_with_color(color);
+print_color(color);
 ```
 Now rather than sending 3 arguments, we send just one. Defining a struct is defining a 
 type. In C, the type we just declared is "struct Color", and now we have a better way 
@@ -258,42 +279,170 @@ In C++, you can attach functions to structs. This means that classes in C++ are 
 just structs, and structs are basically just classes.
 
 ### Pointers 
-Don't worry, I didn't forget about pointers. These deserve their own section though, 
-and we should learn more about memory before diving into pointers.
+Don't worry, I didn't forget about pointers. These deserve their own section, but we 
+should learn more about memory before diving into pointers.
 
 ## Memory
-This is where I'll talk about the stack vs. heap, how memory is actually assigned, and 
-pointers.
+There's 2 different types of memory that you'll hear about: stack, and heap. Usually 
+stack memory is easily accessible, and pointers are stored on the stack, but often point 
+to a heap memory location.
+
+### What is Memory Anyways?
+If you've heard about how much RAM (Random Access Memory) a computer has, that's what 
+we're talking about. Memory is used to store data while running a program. Memory is 
+indexed with a memory address. In 64 bit operating systems, memory addresses are indexed 
+by a 64 bit number. Every address maps to a physical byte of memory in your RAM 
+hardware. When a program starts, the kernel gives a place in memory for the program to 
+use and operate. Like this:
+```C
+int a = 420;
+int b = 69;
+```
+The assembly for this moves 420 to a memory location offset 4 bytes from the stack pointer,
+then moves 69 to a memory location offset 8 bytes from the stack pointer. Later if we were 
+to reference a or b, they would be loaded from a memory location into a CPU register. 
+That's what memory looks like at a basic level!
 
 ### Stack Memory
+Stack memory is often called fast. It's quick to assign a value to stack memory, and is 
+quick to reference a variable in the stack memory. Stack memory is stored LIFO (Last In,
+First Out). There are other restrictions to the stack though. For one, memory stored here must 
+be known at compile time. Dynamically sized memory (memory size not known until runtime) 
+must be stored elsewhere, aka the heap. However, the newly created heap memory address must 
+be known - that's what a pointer is - and can be stored on the stack, since the size of 
+a memory addresses is known. Stack memory is automatically allocated and deallocated 
+when entering or exiting a new subprogram.
 
 ### Heap Memory
+Heap memory is dynamic. Memory is explicitly allocated and deallocated on the heap.
+The most common way to allocate heap memory in C is by using `malloc` (memory allocate):
+```C
+int numbers[] = malloc(100 * sizeof(int));
+```
+Sizeof is a compile-time resolved number, that would return the size in bytes that the 
+int type occupies. So an int is 4 bytes, and therefore 400 bytes are allocated on the 
+heap, which is enough room for 100 int elements in the array. Memory is uninitialized.
+That means that whatever the bytes were set to in that memory region to begin with 
+is the same. There's also calloc (clear allocate), which allocates and zeros the entire 
+memory region.
 
 ### How to use memory
+Allocating heap memory is generally regarded as "slow". It really depends on your 
+particular scenario though. Generally, try and avoid allocating memory in a loop 
+if you can help it. If there's a way to preprocess that memory allocation, do it.
 
 ### Pointers
+Pointers are saved memory addresses. That's it.
+
+When memory is allocated on the heap, it is formless. Its type is `void*`. You can give 
+it form however - you can cast a `void*` pointer to a type. Let's take our previous 
+struct example:
+```C
+struct Color {
+    int red;
+    int green;
+    int blue;
+};
+
+void print_color(struct Color* c) {
+    printf("red: %d, green: %d, blue: %d", c.red, c.green, c.blue);
+    return;
+}
+
+struct Color color = { 10, 186, 181 }; // declares a variable named "color" with type "struct Color"
+
+print_color(&color); // placing a `&` before a variable accesses the memory address
+```
+This is a far more common way the example would be implemented. The main advantage is 
+that no data is copied. In the previous example, where the `struct Color c` was sent 
+as a function argument, the struct would actually be copied into a local variable for 
+the function to use. By sharing a pointer, the function can access the shared memory 
+directly. Also, it could modify the function directly. Consider the following example:
+```C
+void modify_color(struct Color* c) {
+    c->red = 255;
+    c->green = 255;
+    c->blue = 255;
+}
+
+struct Color color = { 0, 0, 0 };
+
+modify_color(&color);
+print_color(&color);
+```
+Since the pointer itsself is shared, the memory location that is modified is the same 
+that is printed. Therefore, running the previous program would print
+```bash
+red: 255, green: 255, blue: 255
+```
+An important property about structs is that their structure is known at compile time.
+This means that the offsets for struct members is known as well. Therefore, when 
+accessing a struct members, the computer actually looks into the pointer + offset,
+and loads that data. In `struct Color`, red is the first member, so the memory offset 
+is 0. Remember that an int is 4 bytes, so for green the actual memory is `c + 4`, 
+and blue would be `c + 8`. Oh yeah, by the way, pointer arithmetic is a thing. If 
+I want to look at the memory 4 ahead of an address memory that I know, I can just 
+add 4 to that memory address, and dereference the pointer to get the underlying data.
+
+Functions and their instructions hold a place in memory. Recall that functions can 
+take pointers as arguments. Therefore, you can pass a pointer to a function as an 
+argument. Check this out:
+```C
+#include <stdio.h>
+
+void print_num(int n) {
+    printf("%d", n);
+}
+
+void do_something_with_num(void (*f)(int)) {
+    int number = 100;
+    f(number);
+}
+int main(void) {
+    do_something_with_num(print_num);
+}
+```
+Running this code would print `100` to the console.
 
 ### Memory Footguns
+The 2 most common memory footguns are memory leaks, and segmentation faults.
 
-### Copies and other costs
-
-## Programming Language Fundamentals 
-
-### Functions
-
-#### Functions are pointers
-The instructions that a function runs are stored in memory somewhere on your machine.
-This means that there is a memory address associated with that function, and therefore 
-a pointer that can point to that function. This means that you can acutally pass functions 
-as arguments to functions. Don't believe me? 
+#### Memory Leaks
+Dynamic memory is allocated on the heap. It must be explicitly deallocated. Imagine this 
+code:
 ```C
+while (1) {
+    void* explodingMemory = malloc(1);
+}
 ```
-Checkmate athiests.
+This code allocated 1 byte of memory at a time, forever. It will take over your 
+entire system resources. Alternatively, consider this code:
+```C
+for (int i = 0; i < 100; i++) {
+    void* explodingMemory = malloc(1);
+}
+```
+This code does exit the loop. But, the memory is still not being deallocated. This 
+is a memory leak, and can eventually hog system resources of memory continues to leak 
+over time. Memory leaks are the cause of around 70% of bugs in production software.
 
-### Macros
+#### Segmentation Fault
+A segmentation fault occurs when you try and do something to memory that the operating 
+system doesn't like. This is usually caused by reading or writing to some memory 
+location the OS did not give the program access to. There's an obvious security vulnerability
+being prevented here - if malware was on the system, and could see data at any memory location,
+it could spy on programs and log that information.
+
+If you index too deep into an array (further than the memory allocated would allow),
+you get a segmentation fault but ONLY if the memory after that location is not owned 
+by you. Segmentation faults do not "throw" an error, they completely crash your program. 
+Handle them, and check that your pointers are not zero before reading and writing to
+them.
+
+### Slow memory operations
+Allocating takes time. Copying takes time. Copying is often convenient, but not 
+always necessary.
 
 ## Essential Data Structures
-
-### Hashmap
-
-### Linked List
+[Click here](https://frontendmasters.com/courses/algorithms/) for a fantastic free 
+course on data structures and algorithms.
