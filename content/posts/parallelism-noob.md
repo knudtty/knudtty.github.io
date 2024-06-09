@@ -1,7 +1,7 @@
 +++
 title = "Parallel Strategies Discovered by a Parallel Noob"
 date = "2023-09-17T20:46:42+0000"
-author = "Aaron Knudtson"
+author = "knudtty"
 authorTwitter = "" #do not include @
 # cover = "bingo"
 tags = ["parallelism", "channels", "CLI", "rust", "programming", "GNU Parallel"]

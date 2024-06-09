@@ -1,7 +1,7 @@
 +++
 title = "The Back to Basics Manifesto"
 date = "2023-09-27T10:00:00+0000"
-author = "Aaron Knudtson"
+author = "knudtty"
 authorTwitter = "" #do not include @
 cover = ""
 tags = ["basics", "pointers", "bits", "bytes"]
