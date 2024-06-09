@@ -1,9 +1,0 @@
-[build]
-  command = "hugo"
-  publish = "public"
-
-[build.environment]
-  HUGO_VERSION = "0.118.2"
-
-[build.processing]
-    skip_processing = true

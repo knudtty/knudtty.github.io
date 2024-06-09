@@ -1,3 +1,2 @@
-<figure style="width: 100%;">
-{{ readFile (print "static/" (index .Params 0)) | safeHTML }}
-</figure>
+{{$svg := .Get 0}}
+{{ $svg  | readFile | safeHTML }}

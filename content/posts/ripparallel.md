@@ -101,6 +101,18 @@ Max Resident: 4032 kb
 Holy cripes that actually worked. But this program doesn't really behave like
 the other two, so let's do something different. Next I investigated channels.
 
+<style>
+svg {
+    width: 100%;
+    height: auto;
+    overflow: visible;
+}
+</style>
+
+<div style="width: 100%; height: auto; overflow: visible;">
+{{< svg "static/rp_iter1.svg" >}}
+</div>
+
 > Iteration 2: Channels
 
 It is very unsafe to share memory to the same object between threads. Channels
@@ -126,7 +138,12 @@ I also broke out `cargo flamegraph` to see what my program is actually doing.
 To my surprise, waiting for a lock on the shared channel took virtually no time
 at all. The process that my threads were running (in this case the echo
 command) took so much more time to execute than sending a Vec<String> through a
-channel that I was no longer worried about this choke point, at least at the 9 threads I was running with.
+channel that I was no longer worried about this choke point, at least at the 9
+threads I was running with.
+
+<div style="width: 100%; height: auto; overflow: visible;">
+{{< svg "static/rp_iter2.svg" >}}
+</div>
 
 > Iteration 3: Scheduling Optimizations
 
@@ -152,6 +169,10 @@ extra performance. Rayon's virtually identical performance was validation that
 I did a good job and I was satisfied. I learned a lot and was ready to rest
 with my new knowledge about threads, channels, and concurrency. But that's NOT
 the 300x I promised you in the title.
+
+<div style="width: 100%; height: auto; overflow: visible;">
+{{< svg "static/rp_iter3.svg" >}}
+</div>
 
 I stumbled across [this
 document](https://www.gnu.org/software/parallel/parallel_alternatives.pdf) of
@@ -193,6 +214,8 @@ extra overhead, as you first have to start your shell process, but then also
 your actual command to run. This allows you to run bash functions, which
 current implementation does not.
 
+> Iteration 4 (Final)
+
 So how do you beat bash builtins in your rust program? That's right - embrace
 more bash. This article is getting lengthy so I won't go into full specifics,
 but I effectively ran a bash repl in each thread at the beginning of my program:
@@ -207,7 +230,7 @@ done
 
 In this case {RAND_STRING} is a 16 character long random string that I generate
 in each thread. It looks super funky, but try running that while loop in your
-shell. It will behave remarkably similar to your shell as you're used to
+shell. It will behave remarkably similar to a bash shell you're used to
 running. A creative problem requred a creative solution. Each job that a thread
 receives is fed in through stdin to this repl and then "\n" is written to
 stdin. Stdout is pulled when available. If the last 16 characters do not match
@@ -224,7 +247,7 @@ Max Resident: 3872 kb
 And voila! Also, I found out xargs can do commands in parallel. For fun, let's
 run of the different tools with an extra zero:
 
-| Command | Time (s) | RSS (kb) |
+| seq 1 100000 \| *Command* | Time (s) | RSS (kb) |
 | ----------- | ----------- | ----------- |
 | rp -j 10 echo {}                | 0.82   | 3824 |
 | rp -j 1 echo {}                 | 3.28   | 3168 |
@@ -232,15 +255,22 @@ run of the different tools with an extra zero:
 | xargs -I {} -P 10 echo {}       | 61.31  | 254688 |
 | ./parallel-bash.bash -p 10 echo | 7.67   | 6944 |
 | parallel -j 10 echo {}          | 264.42 | 19456 |
+| parallel -j 1 echo {}           | a looooong time | who knows |
 
 The benefits of this solution include a blazingly fast language for parsing and
 orchestrating concurrency, able to use bash functions and builtins, and I get
-to say "I use rust BTW". All things considered, this required a lot of
-creativity and I'm sure someone will find a better solution one day. The title
-is probably pretty clickbaity too - I suspect for longer lived processes, the
-gains you will see are less and less. The seq command isn't a super
-representative process for something you would actually do, so I've included
-results for both the seq and gzip benchmarks below.
+to say "I use rust BTW". This solution is pretty well optimized and required a
+lot of creativity. I'm sure someone will find a better solution anyways some
+day.
+
+The title is definitely clickbaity - I suspect for longer lived processes,
+this tool will yield diminishing returns over others. Other tools are far
+fuller featured than this one as well - GNU parallel has a whole unique syntax
+associated with it. I might implement some of the input modifiers at some
+point, but I don't know anyone who uses the `:::` syntax from parallel. The
+seq command isn't a super representative process for something you would
+actually do, so I've included results for both the seq and gzip benchmarks
+below.
 
 Do you want to use this tool? Should I add more features? Stop on over at the
 [ripparallel repo](https://github.com/knudtty/ripparallel) if that's the case.
@@ -280,6 +310,11 @@ Do you want to use this tool? Should I add more features? Stop on over at the
     }
 }
 {{< /chart >}}
+
+<br/>
+<br/>
+<br/>
+
 {{< chart 90 400 >}}
 {
     type: 'bar',
@@ -316,8 +351,18 @@ Do you want to use this tool? Should I add more features? Stop on over at the
 }
 {{< /chart >}}
 
-P.S. I also ran tests with [pigz](https://zlib.net/pigz/), which does gzip in parallel using the command `find . -name "*.html" | time xargs pigz -k` and recorded a benchmark time of 1.06 seconds. That's virtually the same as ripparallel!
+P.S. I also ran tests with [pigz](https://zlib.net/pigz/), which does gzip in parallel using the command `find . -name "*.html" | time xargs pigz -k` and recorded a benchmark time of 1.06 seconds. That's virtually the same as rp + gzip!
+
+# Final Sequence Diagram
+
+<div style="width: 100%; height: auto; overflow: visible;">
+{{< svg "static/rp_iter4.svg" >}}
+</div>
+
+This is roughly what's happening. If I add anymore it will look even more
+complicated.
 
 # Flamegraph for the Nerds
-{{< svg "flamegraph.svg" >}}
-
+<div style="width: 100%; height: auto; overflow: visible;">
+{{< svg "static/flamegraph.svg" >}}
+</div>

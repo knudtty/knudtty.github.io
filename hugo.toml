@@ -102,3 +102,6 @@ tableOfContents = true
   path = 'github.com/panr/hugo-theme-terminal'
 [[module.imports]]
   path = 'github.com/Shen-Yu/hugo-chart'
+
+[markup.goldmark.renderer]
+unsafe= true
